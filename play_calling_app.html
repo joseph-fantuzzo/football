@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="color-scheme" content="light">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Playbook">
+<meta name="theme-color" content="#0f1117">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f1117'/><text y='.9em' font-size='80' x='10'>🏈</text></svg>">
+<title>Playbook</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#fff;min-height:100vh;overflow-x:hidden;}
+.mode-bar{display:flex;background:#090b10;border-bottom:1px solid #1e2130;}
+.sync-btn{flex:0 0 auto;display:flex;align-items:center;gap:5px;padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;}
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#9ca3af;display:inline-block;transition:background .2s;}
+.sync-gear{font-size:14px;color:#6b7280;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:18px;}
+.ov.show{display:flex;}
+.ov-box{background:#11141c;border:1px solid #2a2f42;border-radius:14px;padding:18px;max-width:380px;width:100%;max-height:90vh;overflow:auto;}
+.ov-title{font-size:16px;font-weight:800;color:#f1f5f9;letter-spacing:.3px;}
+.ov-sub{font-size:12px;color:#9ca3af;margin-top:3px;}
+.sync-lbl{display:block;font-size:11px;font-weight:700;color:#94a3b8;margin:10px 0 4px;text-transform:uppercase;letter-spacing:.5px;}
+.sync-in{width:100%;background:#0a0c12;border:1px solid #2a2f42;border-radius:8px;padding:9px 11px;color:#e2e8f0;font-size:13px;font-family:monospace;resize:vertical;}
+.sync-in:focus{outline:none;border-color:#2563eb;}
+select.sync-in{appearance:auto;-webkit-appearance:menulist;}
+.edit-btn{flex:0 0 auto;background:#1e2130;border:1px solid #2a2f42;color:#94a3b8;border-radius:7px;width:34px;height:34px;font-size:15px;cursor:pointer;align-self:center;margin-left:4px;}
+.edit-btn:active{background:#2a2f42;}
+.ed-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;}
+.ed-grid .ed-full{grid-column:1 / -1;}
+.opp-x{display:inline-block;margin-left:7px;color:#6b7280;font-weight:700;font-size:15px;line-height:1;padding:0 2px;border-radius:4px;}
+.opp-x:active{color:#fca5a5;background:#7f1d1d;}
+.mode-btn{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:700;color:#555;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;letter-spacing:0.3px;}
+.mode-btn.active{color:#fff;border-bottom-color:#2563eb;}
+.header{background:#1a1d27;border-bottom:1px solid #2a2d3a;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:37px;z-index:100;}
+.header-title{font-size:15px;font-weight:700;}
+.half-toggle{display:flex;border:1px solid #3a3d4a;border-radius:8px;overflow:hidden;}
+.half-btn{padding:5px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:#1a1d27;color:#888;transition:all 0.15s;}
+.half-btn.active{background:#2563eb;color:#fff;}
+.filters{background:#13151f;border-bottom:1px solid #2a2d3a;padding:8px 14px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;align-items:center;flex-wrap:wrap;}
+.filters::-webkit-scrollbar{display:none;}
+.filter-group{display:flex;gap:4px;align-items:center;}
+.filter-label{font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;margin-right:2px;}
+.chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid #2a2d3a;background:#1a1d27;color:#888;cursor:pointer;white-space:nowrap;transition:all 0.12s;}
+.chip.active{border-color:#2563eb;background:#1e3a8a;color:#93c5fd;}
+.chip.sit-rz.active{border-color:#dc2626;background:#7f1d1d;color:#fca5a5;}
+.chip.sit-3d.active{border-color:#d97706;background:#78350f;color:#fcd34d;}
+.chip.sit-2m.active{border-color:#16a34a;background:#14532d;color:#86efac;}
+.tabs{display:flex;background:#13151f;border-bottom:1px solid #2a2d3a;}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:#555;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;}
+.tab.active{color:#2563eb;border-bottom-color:#2563eb;}
+.play-list{padding:8px;}
+.concept-header{font-size:10px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;padding:4px 6px;}
+.play-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:10px 12px;margin-bottom:5px;cursor:pointer;transition:all 0.12s;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.play-card:active{transform:scale(0.98);}
+.play-card.c1{border-left:3px solid #d97706;}
+.play-card.c2{border-left:3px solid #dc2626;}
+.play-info{flex:1;min-width:0;}
+.play-name{font-size:13px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.play-sub{font-size:11px;color:#555;margin-top:1px;}
+.num-pair{display:flex;flex-direction:column;gap:3px;flex-shrink:0;}
+.nb{font-size:12px;font-weight:800;padding:2px 7px;border-radius:5px;line-height:1.3;}
+.nb1{background:#1e3a8a;color:#93c5fd;}.nb2{background:#7f1d1d;color:#fca5a5;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dr{background:#22c55e;}.dp{background:#3b82f6;}.ds{background:#f59e0b;}
+.cnt{font-size:10px;font-weight:700;padding:1px 5px;border-radius:10px;background:#374151;color:#9ca3af;margin-left:3px;}
+.cnt.w{background:#7f1d1d;color:#fca5a5;}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+.overlay.show{display:flex;}
+.sheet{background:#1a1d27;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px;border-top:1px solid #2a2d3a;max-height:90vh;overflow-y:auto;}
+.handle{width:36px;height:4px;background:#3a3d4a;border-radius:2px;margin:0 auto 16px;}
+.sheet-sub{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.sheet-title{font-size:19px;font-weight:700;color:#fff;margin-bottom:16px;line-height:1.3;}
+.num-blocks{display:flex;gap:10px;margin-bottom:20px;}
+.num-block{flex:1;border-radius:12px;padding:12px;text-align:center;}
+.nb-h1{background:#1e3a8a;}.nb-h2{background:#7f1d1d;}
+.nb-label{font-size:11px;font-weight:700;margin-bottom:4px;}
+.nb-label.h1{color:#93c5fd;}.nb-label.h2{color:#fca5a5;}
+.nb-val{font-size:48px;font-weight:900;line-height:1;}
+.nb-val.h1{color:#bfdbfe;}.nb-val.h2{color:#fecaca;}
+.btn-row{display:flex;gap:8px;}
+.btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.12s;}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:#2563eb;color:#fff;}
+.btn-secondary{background:#2a2d3a;color:#888;}
+.form-section{padding:14px;}
+.form-row{margin-bottom:12px;}
+.form-label{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px;display:block;}
+.form-input,.form-select{width:100%;background:#1a1d27;border:1px solid #2a2d3a;border-radius:8px;padding:9px 12px;color:#fff;font-size:14px;outline:none;appearance:none;}
+.form-input:focus,.form-select:focus{border-color:#2563eb;}
+.form-select option{background:#1a1d27;}
+.chip-group{display:flex;gap:6px;flex-wrap:wrap;}
+.rc{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid #2a2d3a;background:#1a1d27;color:#888;cursor:pointer;transition:all 0.12s;}
+.rc.ag{border-color:#22c55e;background:#14532d;color:#86efac;}
+.rc.al{border-color:#dc2626;background:#7f1d1d;color:#fca5a5;}
+.rc.an{border-color:#d97706;background:#78350f;color:#fcd34d;}
+.rc.at{border-color:#8b5cf6;background:#4c1d95;color:#c4b5fd;}
+.rc.ato{border-color:#ef4444;background:#7f1d1d;color:#fca5a5;}
+.rc.ai{border-color:#6b7280;background:#374151;color:#9ca3af;}
+.dash{padding:12px;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat-card{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:10px;text-align:center;}
+.stat-val{font-size:22px;font-weight:800;color:#fff;line-height:1;}
+.stat-label{font-size:10px;color:#555;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
+.tend-section{margin-bottom:14px;}
+.tend-title{font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding:0 2px;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.bar-label{font-size:11px;color:#9ca3af;width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{flex:1;height:6px;background:#2a2d3a;border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;}
+.bf-run{background:#22c55e;}.bf-pass{background:#3b82f6;}.bf-screen{background:#f59e0b;}.bf-def{background:#6366f1;}
+.bar-pct{font-size:11px;font-weight:700;color:#555;width:30px;text-align:right;}
+.opp-chips{padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid #2a2d3a;}
+.add-btn{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.log-item{background:#1a1d27;border:1px solid #2a2d3a;border-radius:10px;padding:10px 12px;margin-bottom:5px;display:flex;align-items:flex-start;gap:10px;}
+.log-num{font-size:11px;font-weight:700;color:#555;width:22px;text-align:center;flex-shrink:0;margin-top:1px;}
+.log-info{flex:1;min-width:0;}
+.log-play{font-size:13px;font-weight:600;color:#e2e8f0;}
+.log-meta{font-size:11px;color:#555;margin-top:2px;}
+.log-res{font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;white-space:nowrap;}
+.rg{background:#14532d;color:#86efac;}.rl{background:#7f1d1d;color:#fca5a5;}
+.rt{background:#4c1d95;color:#c4b5fd;}.rto{background:#7f1d1d;color:#fca5a5;}
+.ri{background:#374151;color:#9ca3af;}.rn{background:#78350f;color:#fcd34d;}
+.pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;margin-right:3px;}
+.pr{background:#1e3a8a;color:#93c5fd;}.pp{background:#14532d;color:#86efac;}.ps{background:#78350f;color:#fcd34d;}
+.empty{text-align:center;padding:40px 20px;color:#555;font-size:14px;}
+.clear-btn{font-size:11px;color:#555;background:none;border:none;cursor:pointer;padding:4px 8px;}
+.search-wrap{padding:8px 14px;background:#13151f;border-bottom:1px solid #2a2d3a;}
+.search-in{width:100%;background:#1a1d27;border:1px solid #2a2d3a;border-radius:8px;padding:8px 12px;color:#fff;font-size:14px;outline:none;}
+.search-in:focus{border-color:#2563eb;}
+.plus-btn{flex:0;padding:9px 12px;font-size:14px;font-weight:700;border-radius:8px;border:1px solid #2a2d3a;background:#1a1d27;color:#888;cursor:pointer;}
+
+  .tap-group{display:flex;gap:6px;flex-wrap:wrap;}
+  .tap-chip{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;border:1.5px solid #2a2d3a;background:#13151f;color:#888;cursor:pointer;white-space:nowrap;transition:background 0.12s,border-color 0.12s,color 0.12s;user-select:none;-webkit-user-select:none;}
+  .tap-chip.active{border-color:#2563eb;background:#1e3a8a;color:#93c5fd;}
+  .tc-gain.active{border-color:#22c55e !important;background:#14532d !important;color:#86efac !important;}
+  .tc-loss.active{border-color:#dc2626 !important;background:#7f1d1d !important;color:#fca5a5 !important;}
+  .tc-none.active{border-color:#d97706 !important;background:#78350f !important;color:#fcd34d !important;}
+  .tc-td.active{border-color:#8b5cf6 !important;background:#4c1d95 !important;color:#c4b5fd !important;}
+  .tc-to.active{border-color:#ef4444 !important;background:#7f1d1d !important;color:#fca5a5 !important;}
+  .tc-inc.active{border-color:#6b7280 !important;background:#374151 !important;color:#9ca3af !important;}
+</style>
+</head>
+<body>
+<div class="mode-bar">
+  <div class="mode-btn active" onclick="setMode('gd',this)">Game Day</div>
+  <div class="mode-btn" onclick="setMode('opp',this)">Scout Opp</div>
+  <div class="mode-btn" onclick="setMode('self',this)">Self Scout</div>
+  <div class="sync-btn" onclick="openSync()" title="Sync settings"><span id="syncDot" class="sync-dot"></span><span class="sync-gear">⚙</span></div>
+</div>
+
+<!-- ===== SYNC SETTINGS MODAL ===== -->
+<div class="ov" id="syncOl" onclick="closeSync(event)">
+  <div class="ov-box" onclick="event.stopPropagation()">
+    <div class="ov-title">Cross-Device Sync</div>
+    <div class="ov-sub" id="syncStatusLine">Not connected yet</div>
+    <div style="font-size:12px;color:#9ca3af;line-height:1.5;margin:10px 0;">
+      Paste your Supabase <b>Project URL</b> and <b>anon public key</b> below. Do this once on each device (laptop + phone) and your scouting data stays in sync. Your keys are saved on this device only.
+    </div>
+    <label class="sync-lbl">Project URL</label>
+    <input id="sbUrlIn" class="sync-in" placeholder="https://xxxxxxxx.supabase.co" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <label class="sync-lbl">Anon public key</label>
+    <textarea id="sbKeyIn" class="sync-in" rows="3" placeholder="eyJhbG..." autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveSync()">Save &amp; Connect</button>
+      <button class="btn" style="flex:1;background:#1e2130;color:#cbd5e1;" onclick="syncNow()">Sync Now</button>
+    </div>
+    <button class="btn" style="width:100%;margin-top:8px;background:transparent;color:#6b7280;font-size:12px;" onclick="closeSync()">Close</button>
+  </div>
+</div>
+
+<!-- ===== EDIT LOGGED PLAY MODAL ===== -->
+<div class="ov" id="editOl" onclick="closeEdit(event)">
+  <div class="ov-box" onclick="event.stopPropagation()">
+    <div class="ov-title" id="editTitle">Edit Play</div>
+    <div class="ov-sub">Fix anything you mis-tapped, then save.</div>
+    <div id="editBody" style="margin-top:6px;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEdit()">Save Changes</button>
+      <button class="btn" style="flex:0 0 auto;background:#7f1d1d;color:#fca5a5;" onclick="deleteEdit()">Delete</button>
+    </div>
+    <button class="btn" style="width:100%;margin-top:8px;background:transparent;color:#6b7280;font-size:12px;" onclick="closeEdit()">Cancel</button>
+  </div>
+</div>
+
+<!-- GAME DAY -->
+<div id="mode-gd">
+  <div class="header">
+    <div class="header-title">Play Caller</div>
+    <div class="half-toggle">
+      <button class="half-btn active" id="btn-h1" onclick="setHalf(1)">H1</button>
+      <button class="half-btn" id="btn-h2" onclick="setHalf(2)">H2</button>
+    </div>
+  </div>
+  <div class="filters">
+    <div class="filter-group">
+      <div class="filter-label">Qtr</div>
+      <div class="chip active" onclick="tf('qtr','all',this)">All</div>
+      <div class="chip" onclick="tf('qtr','1',this)">Q1</div>
+      <div class="chip" onclick="tf('qtr','2',this)">Q2</div>
+      <div class="chip" onclick="tf('qtr','3',this)">Q3</div>
+      <div class="chip" onclick="tf('qtr','4',this)">Q4</div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Down</div>
+      <div class="chip active" onclick="tf('down','all',this)">All</div>
+      <div class="chip" onclick="tf('down','1',this)">1st</div>
+      <div class="chip" onclick="tf('down','2',this)">2nd</div>
+      <div class="chip" onclick="tf('down','3',this)">3rd</div>
+      <div class="chip" onclick="tf('down','4',this)">4th</div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Dist</div>
+      <div class="chip active" onclick="tf('dist','all',this)">All</div>
+      <div class="chip" onclick="tf('dist','short',this)">1–3</div>
+      <div class="chip" onclick="tf('dist','med',this)">4–7</div>
+      <div class="chip" onclick="tf('dist','long',this)">8+</div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Sit</div>
+      <div class="chip sit-rz" onclick="tf('sit','rz',this)">Red Zone</div>
+      <div class="chip sit-3d" onclick="tf('sit','3d',this)">3rd Down</div>
+      <div class="chip sit-2m" onclick="tf('sit','2m',this)">2-Min</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="gdTab('browse',this)">Browse</div>
+    <div class="tab" onclick="gdTab('search',this)">Search</div>
+    <div class="tab" onclick="gdTab('lookup',this)"># Lookup</div>
+    <div class="tab" onclick="gdTab('history',this)">History <span class="cnt" id="hcnt">0</span></div>
+  </div>
+  <div id="gd-browse"><div class="play-list" id="plist"></div></div>
+  <div id="gd-search" style="display:none;">
+    <div class="search-wrap"><input class="search-in" type="text" placeholder="Search plays, formations, numbers..." oninput="doSearch(this.value)" id="sin"></div>
+    <div class="play-list" id="sres"></div>
+  </div>
+  <div id="gd-lookup" style="display:none;">
+    <div class="form-section">
+      <div style="font-size:12px;color:#555;text-align:center;margin-bottom:8px;">Enter wristband number</div>
+      <input class="form-input" type="number" min="1" max="68" placeholder="—" oninput="doLookup(this.value)" style="font-size:32px;font-weight:800;text-align:center;margin-bottom:12px;">
+      <div id="lres"></div>
+    </div>
+  </div>
+  <div id="gd-history" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 4px;">
+      <div style="font-size:12px;color:#555;font-weight:600;">Plays called this game</div>
+      <button class="clear-btn" onclick="clearGD()">Clear all</button>
+    </div>
+    <div id="hlist" class="play-list"></div>
+  </div>
+</div>
+
+<!-- SCOUT OPP -->
+<div id="mode-opp" style="display:none;">
+  <div class="header">
+    <div class="header-title">Scout Opponent</div>
+    <button class="add-btn" onclick="showOppDlg()">+ Opponent</button>
+  </div>
+  <div class="opp-chips" id="opp-chips"></div>
+  <div class="tabs">
+    <div class="tab active" onclick="oppTab('log',this)">Log Play</div>
+    <div class="tab" onclick="oppTab('raw',this)">Raw Log <span class="cnt" id="scnt">0</span></div>
+    <div class="tab" onclick="oppTab('dash',this)">Tendencies</div>
+    <div class="tab" onclick="oppTab('prep',this)">Game Prep</div>
+  </div>
+  <div id="opp-log">
+    <div class="form-section">
+
+      <div class="form-row">
+        <label class="form-label">Hudl Play Link (optional)</label>
+        <div style="display:flex;gap:6px;">
+          <input class="form-input" type="url" id="s-hudl" placeholder="Paste Hudl play URL..." style="flex:1;">
+          <button class="plus-btn" style="background:#1e3a8a;color:#93c5fd;border-color:#1e3a8a;" id="paste-btn">Paste</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-row">
+          <label class="form-label">Down</label>
+          <div class="tap-group" id="tg-down">
+            <div class="tap-chip active" data-field="down" data-val="1">1st</div>
+            <div class="tap-chip" data-field="down" data-val="2">2nd</div>
+            <div class="tap-chip" data-field="down" data-val="3">3rd</div>
+            <div class="tap-chip" data-field="down" data-val="4">4th</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Distance</label>
+          <div class="tap-group" id="tg-dist">
+            <div class="tap-chip active" data-field="dist" data-val="1-3">1–3</div>
+            <div class="tap-chip" data-field="dist" data-val="4-7">4–7</div>
+            <div class="tap-chip" data-field="dist" data-val="8-10">8–10</div>
+            <div class="tap-chip" data-field="dist" data-val="11+">11+</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-row">
+          <label class="form-label">Hash</label>
+          <div class="tap-group" id="tg-hash">
+            <div class="tap-chip active" data-field="hash" data-val="L">Left</div>
+            <div class="tap-chip" data-field="hash" data-val="M">Mid</div>
+            <div class="tap-chip" data-field="hash" data-val="R">Right</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Quarter</label>
+          <div class="tap-group" id="tg-qtr">
+            <div class="tap-chip active" data-field="qtr" data-val="1">Q1</div>
+            <div class="tap-chip" data-field="qtr" data-val="2">Q2</div>
+            <div class="tap-chip" data-field="qtr" data-val="3">Q3</div>
+            <div class="tap-chip" data-field="qtr" data-val="4">Q4</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Field Position</label>
+        <div class="tap-group" id="tg-fp">
+          <div class="tap-chip active" data-field="fp" data-val="own-1-10">Own 1–10</div>
+          <div class="tap-chip" data-field="fp" data-val="own-11-20">Own 11–20</div>
+          <div class="tap-chip" data-field="fp" data-val="own-21-30">Own 21–30</div>
+          <div class="tap-chip" data-field="fp" data-val="own-31-40">Own 31–40</div>
+          <div class="tap-chip" data-field="fp" data-val="mid">Midfield</div>
+          <div class="tap-chip" data-field="fp" data-val="opp-40">Opp 40–31</div>
+          <div class="tap-chip" data-field="fp" data-val="opp-30">Opp 30–21</div>
+          <div class="tap-chip" data-field="fp" data-val="rz">Red Zone</div>
+          <div class="tap-chip" data-field="fp" data-val="gl">Goal Line</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Formation <button id="add-form-btn" style="background:none;border:none;color:#2563eb;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">+ Add</button></label>
+        <div class="tap-group" id="tg-form"></div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Motion</label>
+        <div class="tap-group" id="tg-motion"></div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Play Type <button id="add-pt-btn" style="background:none;border:none;color:#2563eb;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">+ Add</button></label>
+        <div class="tap-group" id="tg-ptype"></div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Result</label>
+        <div class="tap-group" id="tg-result">
+          <div class="tap-chip tc-gain" data-field="result" data-val="Gain">Gain</div>
+          <div class="tap-chip tc-loss" data-field="result" data-val="Loss">Loss</div>
+          <div class="tap-chip tc-none" data-field="result" data-val="No Gain">No Gain</div>
+          <div class="tap-chip tc-td" data-field="result" data-val="TD">TD</div>
+          <div class="tap-chip tc-to" data-field="result" data-val="Turnover">TO</div>
+          <div class="tap-chip tc-inc" data-field="result" data-val="Incomplete">Inc</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Yards</label>
+        <input class="form-input" type="number" id="s-ya" placeholder="0">
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Notes</label>
+        <input class="form-input" type="text" id="s-no" placeholder="Optional...">
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;font-size:15px;padding:14px;" id="log-opp-btn">Log Play</button>
+    </div>
+  </div>
+
+
+  <div id="opp-raw" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 4px;">
+      <div style="font-size:12px;color:#555;font-weight:600;" id="raw-lbl">No opponent selected</div>
+      <button class="clear-btn" onclick="clearOpp()">Clear</button>
+    </div>
+    <div id="oraw" class="play-list"></div>
+  </div>
+  <div id="opp-dash" style="display:none;"><div class="dash" id="odash"></div></div>
+
+  <!-- GAME PREP -->
+  <div id="opp-prep" style="display:none;">
+    <div style="padding:10px 14px 4px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:12px;color:#555;font-weight:600;" id="prep-lbl">Select an opponent above</div>
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="savePrep()">Save Notes</button>
+    </div>
+    <div id="prep-body" style="padding:0 14px 40px;"></div>
+  </div>
+</div>
+
+<!-- SELF SCOUT -->
+<div id="mode-self" style="display:none;">
+  <div class="header">
+    <div class="header-title">Self Scout</div>
+    <button class="add-btn" onclick="selfTab('log',document.querySelectorAll(\'#mode-self .tab\')[1])">+ Log Play</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="selfTab('log',this)">Log Play</div>
+    <div class="tab" onclick="selfTab('raw',this)">Raw Log <span class="cnt" id="sfcnt">0</span></div>
+    <div class="tab" onclick="selfTab('dash',this)">Tendencies</div>
+  </div>
+  <div id="self-dash" style="display:none;">
+    <div style="padding:8px 14px;border-bottom:1px solid #2a2d3a;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label class="form-label" style="margin:0;white-space:nowrap;">Filter by game:</label>
+        <select class="form-select" id="sf-wk" onchange="renderSelfDash()" style="flex:1;max-width:200px;padding:5px 10px;font-size:13px;"></select>
+      </div>
+    </div>
+    <div class="dash" id="sfdash"></div>
+  </div>
+  <div id="self-log">
+    <div class="form-section">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-row">
+          <label class="form-label">Game / Week</label>
+          <input class="form-input" type="text" id="sf-game" placeholder="e.g. Week 3">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Quarter</label>
+          <div class="tap-group" id="sf-tg-qtr">
+            <div class="tap-chip active" data-sffield="qtr" data-val="1">Q1</div>
+            <div class="tap-chip" data-sffield="qtr" data-val="2">Q2</div>
+            <div class="tap-chip" data-sffield="qtr" data-val="3">Q3</div>
+            <div class="tap-chip" data-sffield="qtr" data-val="4">Q4</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-row">
+          <label class="form-label">Down</label>
+          <div class="tap-group" id="sf-tg-down">
+            <div class="tap-chip active" data-sffield="down" data-val="1">1st</div>
+            <div class="tap-chip" data-sffield="down" data-val="2">2nd</div>
+            <div class="tap-chip" data-sffield="down" data-val="3">3rd</div>
+            <div class="tap-chip" data-sffield="down" data-val="4">4th</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Distance</label>
+          <div class="tap-group" id="sf-tg-dist">
+            <div class="tap-chip active" data-sffield="dist" data-val="1-3">1–3</div>
+            <div class="tap-chip" data-sffield="dist" data-val="4-7">4–7</div>
+            <div class="tap-chip" data-sffield="dist" data-val="8-10">8–10</div>
+            <div class="tap-chip" data-sffield="dist" data-val="11+">11+</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-row">
+          <label class="form-label">Hash</label>
+          <div class="tap-group" id="sf-tg-hash">
+            <div class="tap-chip active" data-sffield="hash" data-val="L">Left</div>
+            <div class="tap-chip" data-sffield="hash" data-val="M">Mid</div>
+            <div class="tap-chip" data-sffield="hash" data-val="R">Right</div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Field Position</label>
+          <div class="tap-group" id="sf-tg-fp">
+            <div class="tap-chip active" data-sffield="fp" data-val="own-1-10">Own 1–10</div>
+            <div class="tap-chip" data-sffield="fp" data-val="own-11-20">Own 11–20</div>
+            <div class="tap-chip" data-sffield="fp" data-val="own-21-30">Own 21–30</div>
+            <div class="tap-chip" data-sffield="fp" data-val="own-31-40">Own 31–40</div>
+            <div class="tap-chip" data-sffield="fp" data-val="mid">Midfield</div>
+            <div class="tap-chip" data-sffield="fp" data-val="opp-40">Opp 40–31</div>
+            <div class="tap-chip" data-sffield="fp" data-val="opp-30">Opp 30–21</div>
+            <div class="tap-chip" data-sffield="fp" data-val="rz">Red Zone</div>
+            <div class="tap-chip" data-sffield="fp" data-val="gl">Goal Line</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Formation</label>
+        <div class="tap-group" id="sf-tg-form">
+          <div class="tap-chip active" data-sffield="form" data-val="Ace RT">Ace RT</div>
+          <div class="tap-chip" data-sffield="form" data-val="Ace LF">Ace LF</div>
+          <div class="tap-chip" data-sffield="form" data-val="Tech RT">Tech RT</div>
+          <div class="tap-chip" data-sffield="form" data-val="Tech LF">Tech LF</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Motion</label>
+        <div class="tap-group" id="sf-tg-motion">
+          <div class="tap-chip active" data-sffield="motion" data-val="None">None</div>
+          <div class="tap-chip" data-sffield="motion" data-val="H Motion">H Motion</div>
+          <div class="tap-chip" data-sffield="motion" data-val="Y Motion">Y Motion</div>
+          <div class="tap-chip" data-sffield="motion" data-val="H Mo In">H Mo In</div>
+          <div class="tap-chip" data-sffield="motion" data-val="H Mo Out">H Mo Out</div>
+          <div class="tap-chip" data-sffield="motion" data-val="Y Mo Out">Y Mo Out</div>
+          <div class="tap-chip" data-sffield="motion" data-val="Bump">Bump</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Concept</label>
+        <div class="tap-group" id="sf-tg-concept">
+          <div class="tap-chip active" data-sffield="concept" data-val="Zone">Zone</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Jet">Jet</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Counter">Counter</div>
+          <div class="tap-chip" data-sffield="concept" data-val="6">6</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Fade/Out">Fade/Out</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Stick">Stick</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Corner">Corner</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Sail">Sail</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Slant">Slant</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Burn">Burn</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Smoke">Smoke</div>
+          <div class="tap-chip" data-sffield="concept" data-val="Fire">Fire</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Play — tap formation + concept first to filter</label>
+        <div class="tap-group" id="sf-tg-play"></div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Result</label>
+        <div class="tap-group" id="sf-tg-result">
+          <div class="tap-chip tc-gain" data-sffield="result" data-val="Gain">Gain</div>
+          <div class="tap-chip tc-loss" data-sffield="result" data-val="Loss">Loss</div>
+          <div class="tap-chip tc-none" data-sffield="result" data-val="No Gain">No Gain</div>
+          <div class="tap-chip tc-td" data-sffield="result" data-val="TD">TD</div>
+          <div class="tap-chip tc-to" data-sffield="result" data-val="Turnover">TO</div>
+          <div class="tap-chip tc-inc" data-sffield="result" data-val="Incomplete">Inc</div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Yards</label>
+        <input class="form-input" type="number" id="sf-ya" placeholder="0">
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;font-size:15px;padding:14px;" id="sf-log-btn">Log Play</button>
+    </div>
+  </div>
+
+  <div id="self-raw" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px 4px;">
+      <div style="font-size:12px;color:#555;font-weight:600;">All logged plays</div>
+      <button class="clear-btn" onclick="clearSelf()">Clear all</button>
+    </div>
+    <div id="sfraw" class="play-list"></div>
+  </div>
+</div>
+
+<!-- CALL OVERLAY -->
+<div class="overlay" id="col" onclick="closeCol(event)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-sub" id="co-sub"></div>
+    <div class="sheet-title" id="co-title"></div>
+    <div class="num-blocks">
+      <div class="num-block nb-h1"><div class="nb-label h1">1st Half</div><div class="nb-val h1" id="co-h1">—</div></div>
+      <div class="num-block nb-h2"><div class="nb-label h2">2nd Half</div><div class="nb-val h2" id="co-h2">—</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeCol()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmCall()">Call Play</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CUSTOM OVERLAY -->
+<div class="overlay" id="caol" onclick="closeCA(event)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-sub" id="ca-sub">Add custom</div>
+    <input class="form-input" id="ca-in" placeholder="Enter name..." style="margin-bottom:14px;">
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeCA()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmCA()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- OPP OVERLAY -->
+<div class="overlay" id="ool" onclick="closeOol(event)">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-sub">New Opponent</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div><label class="form-label">Team Name</label><input class="form-input" id="on-in" placeholder="e.g. Eagles"></div>
+      <div><label class="form-label">Week</label><input class="form-input" id="ow-in" placeholder="e.g. Week 3"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeOol()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmOpp()">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PLAYS=[
+{type:"run",form:"Ace RT",name:"Ace RT – 22 Zone Read",concept:"Zone",h1:5,h2:59},
+{type:"run",form:"Ace RT",name:"Ace RT – Y Motion – 22 Zone Read",concept:"Zone",h1:13,h2:61},
+{type:"run",form:"Ace LF",name:"Ace LF – 21 Zone Read",concept:"Zone",h1:31,h2:40},
+{type:"run",form:"Ace LF",name:"Ace LF – H Motion – 21 Zone Read",concept:"Zone",h1:23,h2:16},
+{type:"run",form:"Tech RT",name:"Tech RT – 22 Zone Read",concept:"Zone",h1:8,h2:11},
+{type:"run",form:"Tech RT",name:"Tech RT – H Motion – 22 Zone Read",concept:"Zone",h1:44,h2:3},
+{type:"run",form:"Tech LF",name:"Tech LF – 21 Zone Read",concept:"Zone",h1:52,h2:37},
+{type:"run",form:"Tech LF",name:"Tech LF – H Motion – 21 Zone Read",concept:"Zone",h1:47,h2:31},
+{type:"run",form:"Ace RT",name:"Ace RT – Y Motion – 39 Jet",concept:"Jet",h1:33,h2:28},
+{type:"run",form:"Ace RT",name:"Ace RT – H Motion – 39 Jet",concept:"Jet",h1:19,h2:27},
+{type:"run",form:"Ace LF",name:"Ace LF – H Motion – 48 Jet",concept:"Jet",h1:12,h2:21},
+{type:"run",form:"Ace LF",name:"Ace LF – Y Motion – 48 Jet",concept:"Jet",h1:53,h2:18},
+{type:"run",form:"Tech RT",name:"Tech RT – H Mo In – 39 Jet Read",concept:"Jet",h1:46,h2:67},
+{type:"run",form:"Tech LF",name:"Tech LF – 48 Jet",concept:"Jet",h1:7,h2:17},
+{type:"run",form:"Ace RT",name:"Ace RT – 26 GT Counter RD",concept:"Counter",h1:4,h2:64},
+{type:"run",form:"Ace LF",name:"Ace LF – 25 GT Counter RD",concept:"Counter",h1:30,h2:23},
+{type:"run",form:"Tech RT",name:"Tech RT – 26 GT Counter RD",concept:"Counter",h1:9,h2:15},
+{type:"run",form:"Tech RT",name:"Tech RT – H Mo In – 26 GH Counter",concept:"Counter",h1:22,h2:33},
+{type:"run",form:"Tech LF",name:"Tech LF – 25 GT Counter RD",concept:"Counter",h1:50,h2:34},
+{type:"run",form:"Tech LF",name:"Tech LF – 25 GH Counter",concept:"Counter",h1:36,h2:4},
+{type:"pass",form:"Ace RT",name:"Ace RT – 6",concept:"6",h1:15,h2:22},
+{type:"pass",form:"Ace RT",name:"Ace RT – H Motion – 6",concept:"6",h1:16,h2:63},
+{type:"pass",form:"Ace LF",name:"Ace LF – 6",concept:"6",h1:43,h2:49},
+{type:"pass",form:"Tech RT",name:"Tech RT – 6",concept:"6",h1:21,h2:12},
+{type:"pass",form:"Tech LF",name:"Tech LF – 6",concept:"6",h1:14,h2:43},
+{type:"pass",form:"Ace RT",name:"Ace RT – Fade/Out",concept:"Fade/Out",h1:26,h2:50},
+{type:"pass",form:"Ace LF",name:"Ace LF – Fade/Out",concept:"Fade/Out",h1:17,h2:45},
+{type:"pass",form:"Tech RT",name:"Tech RT – Fade/Out",concept:"Fade/Out",h1:54,h2:19},
+{type:"pass",form:"Tech LF",name:"Tech LF – Fade/Out",concept:"Fade/Out",h1:40,h2:41},
+{type:"pass",form:"Ace RT",name:"Ace RT – H Motion – Y Stick",concept:"Stick",h1:20,h2:6},
+{type:"pass",form:"Ace RT",name:"Ace RT – Bump – Y Stick",concept:"Stick",h1:28,h2:58},
+{type:"pass",form:"Ace LF",name:"Ace LF – Y Motion – H Stick",concept:"Stick",h1:51,h2:26},
+{type:"pass",form:"Ace LF",name:"Ace LF – Bump – H Stick",concept:"Stick",h1:3,h2:35},
+{type:"pass",form:"Tech RT",name:"Tech RT – H Mo Out – Y Stick",concept:"Stick",h1:11,h2:29},
+{type:"pass",form:"Tech RT",name:"Tech RT – Bump – Y Stick",concept:"Stick",h1:41,h2:46},
+{type:"pass",form:"Tech LF",name:"Tech LF – H Motion – Y Stick",concept:"Stick",h1:18,h2:57},
+{type:"pass",form:"Tech LF",name:"Tech LF – Bump – Y Stick",concept:"Stick",h1:6,h2:10},
+{type:"pass",form:"Ace RT",name:"Ace RT – H Motion – Y Corner",concept:"Corner",h1:39,h2:3},
+{type:"pass",form:"Ace RT",name:"Ace RT – Y Corner",concept:"Corner",h1:45,h2:39},
+{type:"pass",form:"Ace LF",name:"Ace LF – Y Motion – H Corner",concept:"Corner",h1:29,h2:60},
+{type:"pass",form:"Ace LF",name:"Ace LF – H Corner",concept:"Corner",h1:38,h2:22},
+{type:"pass",form:"Tech RT",name:"Tech RT – Y Corner",concept:"Corner",h1:15,h2:59},
+{type:"pass",form:"Tech LF",name:"Tech LF – H Corner",concept:"Corner",h1:2,h2:19},
+{type:"pass",form:"Tech LF",name:"Tech LF – Y Mo Out – Y Corner",concept:"Corner",h1:27,h2:47},
+{type:"pass",form:"Ace RT",name:"Ace RT – H Motion – Sail",concept:"Sail",h1:50,h2:46},
+{type:"pass",form:"Ace LF",name:"Ace LF – Y Motion – Sail",concept:"Sail",h1:55,h2:5},
+{type:"pass",form:"Tech RT",name:"Tech RT – Sail",concept:"Sail",h1:48,h2:42},
+{type:"pass",form:"Tech RT",name:"Tech RT – H Mo Out – Sail",concept:"Sail",h1:37,h2:27},
+{type:"pass",form:"Tech LF",name:"Tech LF – Sail",concept:"Sail",h1:42,h2:51},
+{type:"pass",form:"Tech LF",name:"Tech LF – Y Mo Out – Sail",concept:"Sail",h1:1,h2:38},
+{type:"pass",form:"Ace RT",name:"Ace RT – R Slant",concept:"Slant",h1:32,h2:68},
+{type:"pass",form:"Ace LF",name:"Ace LF – L Slant",concept:"Slant",h1:25,h2:69},
+{type:"pass",form:"Tech RT",name:"Tech RT – R Slant",concept:"Slant",h1:58,h2:60},
+{type:"pass",form:"Tech LF",name:"Tech LF – L Slant",concept:"Slant",h1:67,h2:29},
+{type:"screen",form:"Ace RT",name:"Ace RT – Y Burn",concept:"Burn",h1:63,h2:44},
+{type:"screen",form:"Ace RT",name:"Ace RT – Y Mo In – H Burn",concept:"Burn",h1:57,h2:42},
+{type:"screen",form:"Ace LF",name:"Ace LF – H Burn",concept:"Burn",h1:34,h2:54},
+{type:"screen",form:"Ace LF",name:"Ace LF – H Mo In – Y Burn",concept:"Burn",h1:60,h2:55},
+{type:"screen",form:"Tech RT",name:"Tech RT – Y Mo Out – Y Burn",concept:"Burn",h1:64,h2:1},
+{type:"screen",form:"Tech LF",name:"Tech LF – Y Burn",concept:"Burn",h1:56,h2:56},
+{type:"screen",form:"Ace RT",name:"Ace RT – R Smoke",concept:"Smoke",h1:35,h2:30},
+{type:"screen",form:"Ace LF",name:"Ace LF – L Smoke",concept:"Smoke",h1:24,h2:8},
+{type:"screen",form:"Tech RT",name:"Tech RT – R Smoke",concept:"Smoke",h1:49,h2:52},
+{type:"screen",form:"Tech LF",name:"Tech LF – L Smoke",concept:"Smoke",h1:66,h2:48},
+{type:"screen",form:"Ace RT",name:"Ace RT – Fire",concept:"Fire",h1:10,h2:24},
+{type:"screen",form:"Ace LF",name:"Ace LF – Fire",concept:"Fire",h1:62,h2:2},
+{type:"screen",form:"Tech RT",name:"Tech RT – Fire",concept:"Fire",h1:65,h2:65},
+{type:"screen",form:"Tech LF",name:"Tech LF – Fire",concept:"Fire",h1:68,h2:62}
+];
+
+const SIT={rz:["Ace LF – H Burn","Ace RT – Y Burn","Ace RT – Fire","Ace LF – Fire","Ace RT – H Motion – Y Stick","Ace LF – Y Motion – H Stick","Ace RT – Fade/Out","Ace LF – Fade/Out","Ace RT – H Motion – Y Corner","Ace LF – Y Motion – H Corner","Ace LF – 25 GT Counter RD","Ace RT – 26 GT Counter RD","Ace RT – H Motion – 39 Jet","Ace LF – Y Motion – 48 Jet"],'3d':["Ace LF – H Burn","Ace RT – Y Burn","Ace RT – Fire","Ace LF – Fire","Tech RT – H Mo In – 39 Jet Read","Tech LF – 48 Jet","Ace RT – H Motion – Y Stick","Ace LF – Y Motion – H Stick","Ace RT – H Motion – Sail","Ace LF – Y Motion – Sail","Ace RT – H Motion – Y Corner","Ace LF – Y Motion – H Corner","Ace RT – Y Corner","Ace LF – H Corner","Tech RT – H Mo Out – Sail","Tech LF – Y Mo Out – Sail"],'2m':["Ace RT – Fade/Out","Ace LF – Fade/Out","Tech RT – Fade/Out","Tech LF – Fade/Out","Ace RT – H Motion – Y Corner","Ace LF – Y Motion – H Corner","Ace RT – H Motion – Sail","Ace LF – Y Motion – Sail","Ace LF – H Burn","Ace RT – Y Burn"]};
+const CO=['Zone','Jet','Counter','6','Fade/Out','Stick','Corner','Sail','Slant','Burn','Smoke','Fire'];
+
+let half=1,gdf={qtr:'all',down:'all',dist:'all',sit:null};
+let gdHist=[],scLog=[],sfLog=[],opps=[],curOpp=null,selPlay=null;
+let sRes=null,sfRes=null,caTarget=null;
+let oppForms=['I-Form','Spread','Pro Set','Pistol','Shotgun','Single Back','Trips','Empty'];
+let oppPT=['Run – Inside Zone','Run – Outside Zone','Run – Counter','Run – Power','Run – Sweep','Pass – Dropback','Pass – Play Action','Pass – Screen','Pass – RPO'];
+
+
+// ── SCOUT OPP TAP LOGGING ─────────────────────────────
+let tapState = {down:'1', dist:'1-3', hash:'L', fp:'own-1-10', fo:'', mo:'None', pt:'', result:'', qtr:'1'};
+
+function initOppLog() {
+  // Render dynamic chip groups
+  const fm = document.getElementById('tg-form');
+  if (fm) {
+    fm.innerHTML = oppForms.map((f,i) =>
+      `<div class="tap-chip${i===0?' active':''}" data-field="fo" data-val="${f}">${f}</div>`
+    ).join('');
+    if (oppForms.length) tapState.fo = oppForms[0];
+  }
+  const mo = document.getElementById('tg-motion');
+  const motions = ['None','Jet Motion','Full Motion','Orbit Motion','Shift','Other'];
+  if (mo) {
+    mo.innerHTML = motions.map((m,i) =>
+      `<div class="tap-chip${i===0?' active':''}" data-field="mo" data-val="${m}">${m}</div>`
+    ).join('');
+    tapState.mo = 'None';
+  }
+  const pt = document.getElementById('tg-ptype');
+  if (pt) {
+    pt.innerHTML = oppPT.map((t,i) =>
+      `<div class="tap-chip${i===0?' active':''}" data-field="pt" data-val="${t}">${t}</div>`
+    ).join('');
+    if (oppPT.length) tapState.pt = oppPT[0];
+  }
+  // Wire up event delegation on the whole log form
+  const logDiv = document.getElementById('opp-log');
+  if (logDiv && !logDiv._wired) {
+    logDiv._wired = true;
+    logDiv.addEventListener('click', function(e) {
+      const chip = e.target.closest('.tap-chip');
+      if (chip) {
+        const field = chip.dataset.field;
+        const val = chip.dataset.val;
+        if (!field || !val) return;
+        tapState[field] = val;
+        // Deselect siblings
+        chip.closest('.tap-group').querySelectorAll('.tap-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      }
+    });
+    document.getElementById('log-opp-btn').addEventListener('click', logOpp);
+    document.getElementById('paste-btn').addEventListener('click', pasteHudl);
+    document.getElementById('add-form-btn').addEventListener('click', () => addCustom('fo'));
+    document.getElementById('add-pt-btn').addEventListener('click', () => addCustom('pt'));
+  }
+}
+
+function pasteHudl() {
+  navigator.clipboard.readText().then(t => {
+    document.getElementById('s-hudl').value = t;
+  }).catch(() => document.getElementById('s-hudl').focus());
+}
+
+function renderOppTapChips() { initOppLog(); }
+
+
+function load(){
+  try{
+    const rd=(k,cur)=>{const x=localStorage.getItem(k); if(!x)return cur; try{const p=JSON.parse(x); return Array.isArray(p)?p:cur;}catch(e){return cur;}};
+    gdHist=rd('gdHist',gdHist); scLog=rd('scLog',scLog); sfLog=rd('sfLog',sfLog);
+    opps=rd('opps',opps); oppForms=rd('oppForms',oppForms); oppPT=rd('oppPT',oppPT);
+  }catch(e){}
+  if(!opps.length) {
+    opps = [{"id": "opp0", "name": "Avonworth", "week": ""}, {"id": "opp1", "name": "Butler", "week": ""}, {"id": "opp2", "name": "Fox Chapel", "week": ""}, {"id": "opp3", "name": "Mars Blue", "week": ""}, {"id": "opp4", "name": "Mars Gold", "week": ""}, {"id": "opp5", "name": "NA Black", "week": ""}, {"id": "opp6", "name": "NA Gold", "week": ""}, {"id": "opp7", "name": "North Hills", "week": ""}, {"id": "opp8", "name": "Plum", "week": ""}, {"id": "opp9", "name": "Shaler", "week": ""}, {"id": "opp10", "name": "SV Black", "week": ""}, {"id": "opp11", "name": "SV Blue", "week": ""}, {"id": "opp12", "name": "SV White", "week": ""}];
+    sv('opps', opps);
+  }
+  if(opps.length)curOpp=opps[0];
+  // Heal any corrupted tombstone list left by older buggy syncs
+  try{ localStorage.setItem('delIds', JSON.stringify(getDelIds())); }catch(e){}
+  // Drop anything the user has deleted (tombstones) so deletes survive a refresh
+  try{
+    const del=getDelIds();
+    if(del.length){
+      opps=opps.filter(o=>del.indexOf(o.id)<0);
+      scLog=scLog.filter(x=>del.indexOf(x.id)<0);
+      sfLog=sfLog.filter(x=>del.indexOf(x.id)<0);
+      if(curOpp && del.indexOf(curOpp.id)>-1) curOpp=opps[0]||null;
+    }
+  }catch(e){}
+  init();
+}
+
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} sbPush(k,v);}
+
+/* ========================================================================
+   SUPABASE CROSS-DEVICE SYNC  (offline-first, merge-on-pull)
+   ======================================================================== */
+const SB = { url: localStorage.getItem('sb_url')||'', key: localStorage.getItem('sb_key')||'', timers:{} };
+function sbConfigured(){ return !!(SB.url && SB.key); }
+function sbHeaders(){ return {'apikey':SB.key,'Authorization':'Bearer '+SB.key,'Content-Type':'application/json'}; }
+
+function sbSetStatus(s){
+  const map={off:['#9ca3af','Sync off'],ok:['#16a34a','Synced'],sync:['#f59e0b','Syncing…'],err:['#dc2626','Sync error — check settings']};
+  const [c,t]=map[s]||map.off;
+  const dot=document.getElementById('syncDot'); if(dot){dot.style.background=c;dot.title=t;}
+  const line=document.getElementById('syncStatusLine'); if(line)line.textContent=t;
+}
+
+// Push one key (debounced) — called on every save
+function sbPush(k,v){
+  if(!sbConfigured()||!navigator.onLine) return;
+  clearTimeout(SB.timers[k]);
+  SB.timers[k]=setTimeout(()=>{
+    sbSetStatus('sync');
+    fetch(SB.url+'/rest/v1/app_state',{
+      method:'POST',
+      headers:Object.assign({},sbHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body:JSON.stringify([{id:k,data:v,updated_at:new Date().toISOString()}])
+    }).then(r=>sbSetStatus(r.ok?'ok':'err')).catch(()=>sbSetStatus('err'));
+  },700);
+}
+
+// Identity for an array entry: its id if present, else its full contents
+function sbEntryKey(x){
+  if(x && typeof x==='object' && x.id!=null) return 'id:'+x.id;
+  return 'j:'+JSON.stringify(x);
+}
+
+// Modified-time of an entry (used to resolve edits): explicit _m, else creation id
+function sbMtime(x){ return (x && (Number(x._m)||Number(x.id))) || 0; }
+
+// Merge remote blob into local blob without losing data
+function sbMerge(local, remote){
+  if(remote==null) return local;
+  if(local==null) return remote;
+  if(Array.isArray(local) && Array.isArray(remote)){
+    const map={}, order=[];
+    const put=x=>{ const k=sbEntryKey(x); if(!(k in map)){map[k]=x;order.push(k);} else if(sbMtime(x)>sbMtime(map[k])){map[k]=x;} };
+    local.forEach(put); remote.forEach(put);
+    return order.map(k=>map[k]);
+  }
+  if(typeof local==='object' && typeof remote==='object'){
+    // game-prep notes: keep both, remote fills/updates non-empty fields
+    const out=Object.assign({},local);
+    Object.keys(remote).forEach(f=>{ if(remote[f] && remote[f]!==local[f]) out[f]=remote[f]; });
+    return out;
+  }
+  return remote;
+}
+
+// All localStorage keys this app uses (fixed + dynamic prep_*)
+function sbAllKeys(){
+  const fixed=['gdHist','scLog','sfLog','opps','oppForms','oppPT','delIds'];
+  const keys=new Set(fixed);
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i); if(k&&k.indexOf('prep_')===0)keys.add(k);}
+  return keys;
+}
+
+// Pull everything, merge into local, apply deletes, push converged values back, re-render
+function sbPull(){
+  if(!sbConfigured()){ sbSetStatus('off'); return; }
+  if(!navigator.onLine){ sbSetStatus('err'); return; }
+  sbSetStatus('sync');
+  fetch(SB.url+'/rest/v1/app_state?select=id,data,updated_at',{headers:sbHeaders()})
+    .then(r=> r.ok ? r.json() : Promise.reject(r.status))
+    .then(rows=>{
+      const remote={}; rows.forEach(r=>{remote[r.id]=r.data;});
+      const keys=new Set([...sbAllKeys(), ...Object.keys(remote)]);
+      const localGet=k=>{try{const raw=localStorage.getItem(k);return raw?JSON.parse(raw):null;}catch(e){return null;}};
+      // 1. merge every key
+      const merged={};
+      keys.forEach(k=>{ merged[k]=sbMerge(localGet(k), remote[k]!==undefined?remote[k]:null); });
+      // 2. apply delete tombstones to logs AND opponents
+      const del=Array.isArray(merged['delIds'])?merged['delIds']:[];
+      ['scLog','sfLog','opps'].forEach(k=>{ if(Array.isArray(merged[k])) merged[k]=merged[k].filter(x=>!(x&&del.indexOf(x.id)>-1)); });
+      // 3. write back locally + push anything the cloud doesn't already match
+      let changed=false;
+      keys.forEach(k=>{
+        if(merged[k]==null) return; // never persist an empty/null blob
+        const newStr=JSON.stringify(merged[k]);
+        if(newStr!==localStorage.getItem(k)){ try{localStorage.setItem(k,newStr);}catch(e){} changed=true; }
+        if(JSON.stringify(remote[k])!==newStr){ sbPush(k,merged[k]); }
+      });
+      if(changed) sbReload();
+      sbSetStatus('ok');
+    })
+    .catch(()=>sbSetStatus('err'));
+}
+
+// Re-read state from localStorage into the app's variables and refresh UI
+function sbReload(){
+  try{
+    const rd=(k,cur)=>{const x=localStorage.getItem(k); if(!x)return cur; try{const p=JSON.parse(x); return Array.isArray(p)?p:cur;}catch(e){return cur;}};
+    gdHist=rd('gdHist',gdHist); scLog=rd('scLog',scLog); sfLog=rd('sfLog',sfLog);
+    opps=rd('opps',opps); oppForms=rd('oppForms',oppForms); oppPT=rd('oppPT',oppPT);
+  }catch(e){}
+  if(opps.length && (!curOpp || !opps.find(o=>o.id===curOpp.id))) curOpp=opps[0];
+  try{ init(); }catch(e){}
+  try{ if(typeof renderPrep==='function' && curOpp) renderPrep(); }catch(e){}
+}
+
+// ---- Settings modal controls ----
+function openSync(){
+  document.getElementById('sbUrlIn').value=SB.url;
+  document.getElementById('sbKeyIn').value=SB.key;
+  sbSetStatus(sbConfigured()?(navigator.onLine?'ok':'err'):'off');
+  document.getElementById('syncOl').classList.add('show');
+}
+function closeSync(e){ if(!e||e.target===document.getElementById('syncOl')){document.getElementById('syncOl').classList.remove('show');} }
+function saveSync(){
+  let u=document.getElementById('sbUrlIn').value.trim().replace(/\/+$/,'');
+  let k=document.getElementById('sbKeyIn').value.trim();
+  SB.url=u; SB.key=k;
+  localStorage.setItem('sb_url',u); localStorage.setItem('sb_key',k);
+  if(!sbConfigured()){ sbSetStatus('off'); return; }
+  // First connect: push everything we have, then pull+merge
+  sbSetStatus('sync');
+  const keys=Array.from(sbAllKeys());
+  Promise.all(keys.map(k=>{
+    const raw=localStorage.getItem(k); if(raw==null) return Promise.resolve();
+    return fetch(SB.url+'/rest/v1/app_state',{
+      method:'POST',
+      headers:Object.assign({},sbHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),
+      body:JSON.stringify([{id:k,data:JSON.parse(raw),updated_at:new Date().toISOString()}])
+    });
+  })).then(()=>sbPull()).catch(()=>sbSetStatus('err'));
+}
+function syncNow(){ if(!sbConfigured()){alert('Enter your Supabase URL and key first.');return;} sbPull(); }
+
+// Pull when the app regains focus / becomes visible (e.g. switch from laptop to phone)
+window.addEventListener('online', sbPull);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') sbPull(); });
+window.addEventListener('focus', sbPull);
+
+// Always return the deleted-items (tombstone) list as a valid array,
+// even if older buggy syncs stored "null" or something invalid.
+function getDelIds(){ try{ const r=localStorage.getItem('delIds'); const p=r?JSON.parse(r):[]; return Array.isArray(p)?p:[]; }catch(e){ return []; } }
+function addDel(id){ const del=getDelIds(); if(del.indexOf(id)<0){ del.push(id); sv('delIds',del); } }
+
+/* ========================================================================
+   EDIT / DELETE A LOGGED PLAY
+   ======================================================================== */
+let editCtx = null; // { type:'opp'|'self', id }
+
+// Build a labelled <select>. opts = array of [value,label]. cur = current value.
+function edSelect(id, label, opts, cur, full){
+  const has = opts.some(o=>o[0]===cur);
+  const list = has ? opts : [[cur, cur]].concat(opts);
+  return `<div class="${full?'ed-full':''}"><label class="sync-lbl">${label}</label>`+
+    `<select id="${id}" class="sync-in">`+
+    list.map(o=>`<option value="${String(o[0]).replace(/"/g,'&quot;')}"${o[0]===cur?' selected':''}>${o[1]}</option>`).join('')+
+    `</select></div>`;
+}
+function edInput(id, label, val, full, type){
+  return `<div class="${full?'ed-full':''}"><label class="sync-lbl">${label}</label>`+
+    `<input id="${id}" class="sync-in" type="${type||'text'}" value="${String(val==null?'':val).replace(/"/g,'&quot;')}"></div>`;
+}
+
+const ED_DOWN = [['1','1st'],['2','2nd'],['3','3rd'],['4','4th']];
+const ED_DIST = [['1-3','1–3'],['4-7','4–7'],['8-10','8–10'],['11+','11+']];
+const ED_HASH = [['L','Left'],['M','Mid'],['R','Right']];
+const ED_QTR  = [['1','Q1'],['2','Q2'],['3','Q3'],['4','Q4']];
+const ED_FP   = [['own-1-10','Own 1–10'],['own-11-20','Own 11–20'],['own-21-30','Own 21–30'],['own-31-40','Own 31–40'],['mid','Midfield'],['opp-40','Opp 40–31'],['opp-30','Opp 30–21'],['rz','Red Zone'],['gl','Goal Line']];
+const ED_RES  = [['Gain','Gain'],['Loss','Loss'],['No Gain','No Gain'],['TD','TD'],['Turnover','Turnover'],['Incomplete','Incomplete']];
+const ED_MOT  = [['None','None'],['Jet Motion','Jet Motion'],['Full Motion','Full Motion'],['Orbit Motion','Orbit Motion'],['Shift','Shift'],['Other','Other']];
+
+function openEdit(type, id){
+  const arr = type==='opp' ? scLog : sfLog;
+  const e = arr.find(x=>x.id===id);
+  if(!e){ return; }
+  editCtx = { type, id };
+  document.getElementById('editTitle').textContent = type==='opp' ? 'Edit Scouted Play' : 'Edit Your Play';
+  let h = '<div class="ed-grid">';
+  if(type==='opp'){
+    const forms = (oppForms&&oppForms.length?oppForms:['']).map(f=>[f,f]);
+    const ptypes = (oppPT&&oppPT.length?oppPT:['']).map(t=>[t,t]);
+    h += edSelect('ed-fo','Formation',forms,e.fo,true);
+    h += edSelect('ed-mo','Motion',ED_MOT,e.mo||'None');
+    h += edSelect('ed-pt','Play Type',ptypes,e.pt);
+    h += edSelect('ed-qt','Quarter',ED_QTR,e.qt);
+    h += edSelect('ed-dn','Down',ED_DOWN,e.dn);
+    h += edSelect('ed-ds','Distance',ED_DIST,e.ds);
+    h += edSelect('ed-ha','Hash',ED_HASH,e.ha);
+    h += edSelect('ed-fp','Field Position',ED_FP,e.fp,true);
+    h += edSelect('ed-res','Result',ED_RES,e.res);
+    h += edInput('ed-ya','Yards',e.ya,false,'number');
+    h += edInput('ed-no','Notes',e.no,true);
+    h += edInput('ed-hudl','Hudl Link',e.hudl,true);
+  } else {
+    const plays = PLAYS.map(p=>[p.name,p.name]);
+    h += edSelect('ed-name','Play',plays,e.name,true);
+    h += edInput('ed-gm','Game',e.gm,true);
+    h += edSelect('ed-qt','Quarter',ED_QTR,e.qt);
+    h += edSelect('ed-dn','Down',ED_DOWN,e.dn);
+    h += edSelect('ed-ds','Distance',ED_DIST,e.ds);
+    h += edSelect('ed-ha','Hash',ED_HASH,e.ha);
+    h += edSelect('ed-fp','Field Position',ED_FP,e.fp,true);
+    h += edSelect('ed-res','Result',ED_RES,e.res);
+    h += edInput('ed-ya','Yards',e.ya,false,'number');
+  }
+  h += '</div>';
+  document.getElementById('editBody').innerHTML = h;
+  document.getElementById('editOl').classList.add('show');
+}
+
+function closeEdit(ev){
+  if(!ev || ev.target===document.getElementById('editOl')){
+    document.getElementById('editOl').classList.remove('show');
+    editCtx = null;
+  }
+}
+
+function saveEdit(){
+  if(!editCtx) return;
+  const g = id => { const el=document.getElementById(id); return el?el.value:undefined; };
+  const arr = editCtx.type==='opp' ? scLog : sfLog;
+  const e = arr.find(x=>x.id===editCtx.id);
+  if(!e){ closeEdit(); return; }
+  if(editCtx.type==='opp'){
+    e.fo=g('ed-fo'); e.mo=g('ed-mo'); e.pt=g('ed-pt'); e.qt=g('ed-qt');
+    e.dn=g('ed-dn'); e.ds=g('ed-ds'); e.ha=g('ed-ha'); e.fp=g('ed-fp');
+    e.res=g('ed-res'); e.ya=g('ed-ya')||'0'; e.no=(g('ed-no')||'').trim(); e.hudl=(g('ed-hudl')||'').trim();
+  } else {
+    e.name=g('ed-name'); e.gm=(g('ed-gm')||'').trim(); e.qt=g('ed-qt');
+    e.dn=g('ed-dn'); e.ds=g('ed-ds'); e.ha=g('ed-ha'); e.fp=g('ed-fp');
+    e.res=g('ed-res'); e.ya=g('ed-ya')||'0';
+    const pl=PLAYS.find(x=>x.name===e.name); if(pl){ e.concept=pl.concept; e.type=pl.type; if(pl.form)e.form=pl.form; }
+  }
+  e._m = Date.now(); // mark edited so the change wins on sync
+  if(editCtx.type==='opp'){
+    sv('scLog',scLog);
+    if(curOpp){document.getElementById('scnt').textContent=scLog.filter(x=>x.oid===curOpp.id).length;}
+    renderRawOpp(); renderOppDash();
+  } else {
+    sv('sfLog',sfLog);
+    document.getElementById('sfcnt').textContent=sfLog.length;
+    renderSelfRaw(); renderSelfDash();
+  }
+  closeEdit();
+}
+
+function deleteEdit(){
+  if(!editCtx) return;
+  if(!confirm('Delete this logged play? This cannot be undone.')) return;
+  const id = editCtx.id;
+  // tombstone so the delete also syncs to other devices
+  addDel(id);
+  if(editCtx.type==='opp'){
+    scLog=scLog.filter(x=>x.id!==id); sv('scLog',scLog);
+    if(curOpp){document.getElementById('scnt').textContent=scLog.filter(x=>x.oid===curOpp.id).length;}
+    renderRawOpp(); renderOppDash();
+  } else {
+    sfLog=sfLog.filter(x=>x.id!==id); sv('sfLog',sfLog);
+    document.getElementById('sfcnt').textContent=sfLog.length;
+    renderSelfRaw(); renderSelfDash();
+  }
+  closeEdit();
+}
+
+function init(){
+  renderPlays();renderOppChips();renderOppForms();
+  document.getElementById('hcnt').textContent=gdHist.length;
+  document.getElementById('scnt').textContent=curOpp?scLog.filter(p=>p.oid===curOpp.id).length:0;
+  document.getElementById('sfcnt').textContent=sfLog.length;
+  const sfpl=document.getElementById('sf-pl');
+  if(sfpl) sfpl.innerHTML='<option value="">Select a play...</option>'+PLAYS.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  renderSelfDash();updateSfWeeks();
+}
+
+function sfx(n){return n==1?'st':n==2?'nd':n==3?'rd':'th';}
+function rc(r){if(r==='TD')return'rt';if(r==='Turnover')return'rto';if(r==='Loss')return'rl';if(r==='Gain')return'rg';if(r==='Incomplete')return'ri';return'rn';}
+
+/* GAME DAY */
+function setHalf(h){half=h;document.getElementById('btn-h1').classList.toggle('active',h===1);document.getElementById('btn-h2').classList.toggle('active',h===2);renderPlays();}
+function tf(t,v,el){const g=el.parentElement.querySelectorAll('.chip');if(t==='sit'){if(gdf.sit===v){gdf.sit=null;el.classList.remove('active');}else{gdf.sit=v;g.forEach(c=>c.classList.remove('active'));el.classList.add('active');}}else{g.forEach(c=>c.classList.remove('active'));el.classList.add('active');gdf[t]=v;}renderPlays();}
+function getF(){return PLAYS.filter(p=>{if(gdf.sit)return(SIT[gdf.sit]||[]).includes(p.name);if(gdf.dist!=='all'){if(gdf.dist==='short')return['Burn','Smoke','Fire','Jet','Zone'].includes(p.concept);if(gdf.dist==='med')return['Stick','Sail','6','Counter','Zone'].includes(p.concept);if(gdf.dist==='long')return['Corner','Fade/Out','Slant','Sail'].includes(p.concept);}return true;});}
+function cc(n){return gdHist.filter(h=>h.name===n).length;}
+function mkCard(p){const c=cc(p.name),dc={run:'dr',pass:'dp',screen:'ds'}[p.type],cls='play-card'+(c>=2?' c2':c>=1?' c1':'');const b=c>0?`<span class="cnt${c>=2?' w':''}">${c}x</span>`:'';const sh=p.name.replace(p.form+' – ','');return`<div class="${cls}" onclick="openP('${p.name.replace(/'/g,"\\'")}')"><div class="dot ${dc}"></div><div class="play-info"><div class="play-name">${sh}${b}</div><div class="play-sub">${p.form}</div></div><div class="num-pair"><span class="nb nb1">${p.h1}</span><span class="nb nb2">${p.h2}</span></div></div>`;}
+function renderPlays(){const el=document.getElementById('plist'),pl=getF();if(!pl.length){el.innerHTML='<div class="empty">No plays match.</div>';return;}const cs=[...new Set(pl.map(p=>p.concept))];el.innerHTML=CO.filter(c=>cs.includes(c)).map(c=>`<div><div class="concept-header">${c}</div>${pl.filter(p=>p.concept===c).map(mkCard).join('')}</div>`).join('');}
+function doSearch(q){const el=document.getElementById('sres');if(!q.trim()){el.innerHTML='';return;}const r=PLAYS.filter(p=>p.name.toLowerCase().includes(q.toLowerCase())||p.concept.toLowerCase().includes(q.toLowerCase())||String(p.h1).includes(q)||String(p.h2).includes(q));el.innerHTML=r.length?r.map(mkCard).join(''):'<div class="empty">No plays found.</div>';}
+function doLookup(v){const num=parseInt(v),el=document.getElementById('lres');if(!num){el.innerHTML='';return;}const h1m=PLAYS.find(p=>p.h1===num),h2m=PLAYS.find(p=>p.h2===num);if(!h1m&&!h2m){el.innerHTML='<div class="empty">Not found.</div>';return;}let html='';if(h1m)html+=`<div style="margin-bottom:${h2m?'12px':'0'}"><div style="font-size:10px;color:#3b82f6;font-weight:700;margin-bottom:4px;">1ST HALF</div>${mkCard(h1m)}</div>`;if(h2m&&h2m!==h1m)html+=`<div><div style="font-size:10px;color:#ef4444;font-weight:700;margin-bottom:4px;">2ND HALF</div>${mkCard(h2m)}</div>`;el.innerHTML=html;}
+function openP(n){const p=PLAYS.find(x=>x.name===n);if(!p)return;selPlay=p;document.getElementById('co-sub').textContent=p.form+' · '+p.type.toUpperCase();document.getElementById('co-title').textContent=p.name.replace(p.form+' – ','');document.getElementById('co-h1').textContent=p.h1;document.getElementById('co-h2').textContent=p.h2;document.getElementById('col').classList.add('show');}
+function closeCol(e){if(!e||e.target===document.getElementById('col')){document.getElementById('col').classList.remove('show');selPlay=null;}}
+function confirmCall(){if(!selPlay)return;const q=gdf.qtr==='all'?'Q?':'Q'+gdf.qtr,dn=gdf.down==='all'?'?':gdf.down+sfx(parseInt(gdf.down)),ds=gdf.dist==='all'?'?':{short:'1–3',med:'4–7',long:'8+'}[gdf.dist];gdHist.push({name:selPlay.name,form:selPlay.form,type:selPlay.type,concept:selPlay.concept,h1:selPlay.h1,h2:selPlay.h2,half,q,dn,ds,t:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});sv('gdHist',gdHist);document.getElementById('col').classList.remove('show');selPlay=null;renderPlays();document.getElementById('hcnt').textContent=gdHist.length;if(document.getElementById('gd-history').style.display!=='none')renderGDH();}
+function renderGDH(){const el=document.getElementById('hlist');if(!gdHist.length){el.innerHTML='<div class="empty">No plays called yet.</div>';return;}el.innerHTML=[...gdHist].reverse().map((h,i)=>{const n=gdHist.length-i;return`<div class="log-item"><div class="log-num">${n}</div><div class="log-info"><div class="log-play">${h.name.replace(h.form+' – ','')}</div><div class="log-meta">${h.form} · ${h.q} · ${h.dn} &amp; ${h.ds} · ${h.t}</div></div><span class="nb ${h.half===1?'nb1':'nb2'}">${h.half===1?h.h1:h.h2}</span></div>`;}).join('');}
+function clearGD(){gdHist=[];sv('gdHist',gdHist);renderGDH();renderPlays();document.getElementById('hcnt').textContent=0;}
+function gdTab(t,el){document.querySelectorAll('#mode-gd .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');['browse','search','lookup','history'].forEach(x=>document.getElementById('gd-'+x).style.display=x===t?'block':'none');if(t==='history')renderGDH();if(t==='search')document.getElementById('sin').focus();if(t==='lookup')document.querySelector('#gd-lookup input').focus();}
+
+/* SCOUT OPP */
+function renderOppChips(){const el=document.getElementById('opp-chips');if(!el)return;if(!opps.length){el.innerHTML='<div style="font-size:12px;color:#555;padding:4px 0;">No opponents yet. Tap + Opponent to create one.</div>';return;}el.innerHTML=opps.map(o=>`<div class="chip${curOpp&&curOpp.id===o.id?' active':''}" onclick="selOpp('${o.id}')">${o.name}${o.week?' · '+o.week:''}<span class="opp-x" onclick="event.stopPropagation();delOpp('${o.id}')">×</span></div>`).join('');}
+function delOpp(id){const o=opps.find(x=>x.id===id);if(!o)return;if(!confirm('Remove "'+o.name+(o.week?' · '+o.week:'')+'" from the opponent list? Any scouting you logged for it stays saved.'))return;addDel(id);opps=opps.filter(x=>x.id!==id);sv('opps',opps);if(curOpp&&curOpp.id===id)curOpp=opps[0]||null;renderOppChips();if(curOpp){selOpp(curOpp.id);}else{document.getElementById('scnt').textContent=0;renderRawOpp();renderOppDash();}}
+function selOpp(id){curOpp=opps.find(o=>o.id===id);renderOppChips();document.getElementById('scnt').textContent=scLog.filter(p=>p.oid===curOpp.id).length;document.getElementById('raw-lbl').textContent=curOpp.name+(curOpp.week?' '+curOpp.week:'')+' — Scout Log';renderRawOpp();renderOppDash();}
+function renderOppForms(){renderOppTapChips();}
+function showOppDlg(){document.getElementById('ool').classList.add('show');}
+function closeOol(e){if(!e||e.target===document.getElementById('ool'))document.getElementById('ool').classList.remove('show');}
+function confirmOpp(){const n=document.getElementById('on-in').value.trim(),w=document.getElementById('ow-in').value.trim();if(!n)return;const o={id:Date.now().toString(),name:n,week:w};opps.push(o);sv('opps',opps);curOpp=o;document.getElementById('on-in').value='';document.getElementById('ow-in').value='';closeOol();renderOppChips();}
+function addCustom(t){caTarget=t;const lb={'fo':'Formation','mo':'Motion','pt':'Play Type'};document.getElementById('ca-sub').textContent='Add '+lb[t];document.getElementById('ca-in').value='';document.getElementById('caol').classList.add('show');}
+function closeCA(e){if(!e||e.target===document.getElementById('caol'))document.getElementById('caol').classList.remove('show');}
+function confirmCA(){const v=document.getElementById('ca-in').value.trim();if(!v)return;if(caTarget==='fo'){oppForms.push(v);sv('oppForms',oppForms);initOppLog();}if(caTarget==='mo'){const mo=document.getElementById('tg-motion');if(mo){const chip=document.createElement('div');chip.className='tap-chip';chip.dataset.field='mo';chip.dataset.val=v;chip.textContent=v;mo.appendChild(chip);}}if(caTarget==='pt'){oppPT.push(v);sv('oppPT',oppPT);initOppLog();}closeCA();}
+function selRes(el,cls,val){sRes=val;document.querySelectorAll('#rchips .rc').forEach(c=>{c.className='rc';});el.classList.add(cls);}
+function logOpp(){
+  if(!curOpp){alert('Select an opponent first.');return;}
+  if(!tapState.result){alert('Please tap a result before logging.');return;}
+  const p={
+    id:Date.now().toString(),
+    oid:curOpp.id,
+    dn:tapState.down||'1',
+    ds:tapState.dist||'1-3',
+    ha:tapState.hash||'L',
+    fp:tapState.fp||'mid',
+    fo:tapState.fo||oppForms[0]||'',
+    mo:tapState.mo||'None',
+    pt:tapState.pt||oppPT[0]||'',
+    ya:document.getElementById('s-ya').value||'0',
+    qt:tapState.qtr||'1',
+    res:tapState.result,
+    no:document.getElementById('s-no').value.trim(),
+    hudl:document.getElementById('s-hudl').value.trim(),
+    ts:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})
+  };
+  scLog.push(p);sv('scLog',scLog);
+  // Reset result only — keep everything else for next play
+  tapState.result='';
+  document.getElementById('tg-result').querySelectorAll('.tap-chip').forEach(c=>c.classList.remove('active'));
+  document.getElementById('s-ya').value='';
+  document.getElementById('s-no').value='';
+  document.getElementById('s-hudl').value='';
+  document.getElementById('scnt').textContent=scLog.filter(x=>x.oid===curOpp.id).length;
+  const btn=document.getElementById('log-opp-btn');
+  btn.textContent='✓ Logged!';btn.style.background='#14532d';
+  setTimeout(()=>{btn.textContent='Log Play';btn.style.background='';},1000);
+}
+
+function getOppLog(){return curOpp?scLog.filter(p=>p.oid===curOpp.id):[];}
+function renderRawOpp(){const el=document.getElementById('oraw'),log=getOppLog();if(!log.length){el.innerHTML='<div class="empty">No plays logged yet.</div>';return;}el.innerHTML=[...log].reverse().map((p,i)=>{const n=log.length-i,isRun=p.pt.includes('Run'),isPass=p.pt.includes('Pass');const pill=`<span class="pill ${isRun?'pr':isPass?'pp':'ps'}">${isRun?'run':isPass?'pass':'screen'}</span>`;const watchBtn=p.hudl?`<a href="${p.hudl}" target="_blank" class="nb nb1" style="font-size:11px;text-decoration:none;padding:3px 8px;flex-shrink:0;">▶ Watch</a>`:'';return`<div class="log-item"><div class="log-num">${n}</div><div class="log-info"><div class="log-play">${pill}${p.fo}${p.mo&&p.mo!=='None'?' – '+p.mo:''} – ${p.pt}</div><div class="log-meta">Q${p.qt} · ${p.dn}${sfx(parseInt(p.dn))} &amp; ${p.ds} · ${p.ha} hash · ${p.fp}${p.no?' · '+p.no:''}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0;"><span class="log-res ${rc(p.res)}">${p.res}${p.ya&&p.ya!=='0'?' '+p.ya+'yds':''}</span>${watchBtn}</div><button class="edit-btn" onclick="openEdit('opp','${p.id}')">✎</button></div>`;}).join('');}
+function clearOpp(){if(!curOpp)return;scLog=scLog.filter(p=>p.oid!==curOpp.id);sv('scLog',scLog);document.getElementById('scnt').textContent=0;renderRawOpp();renderOppDash();}
+function renderOppDash(){const el=document.getElementById('odash'),log=getOppLog();if(!log.length){el.innerHTML='<div class="empty">Log plays to see tendencies.</div>';return;}el.innerHTML=buildDash(log,'opp');}
+function oppTab(t,el){document.querySelectorAll('#mode-opp .tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');['log','raw','dash','prep'].forEach(x=>document.getElementById('opp-'+x).style.display=x===t?'block':'none');if(t==='log')renderOppTapChips();if(t==='raw')renderRawOpp();if(t==='dash')renderOppDash();if(t==='prep')renderPrep();}
+
+/* SELF SCOUT */
+let sfTapState = {qtr:'1', down:'1', dist:'1-3', hash:'L', fp:'own-1-10', form:'Ace RT', motion:'None', concept:'Zone', play:'', result:''};
+
+function initSelfLog() {
+  const logDiv = document.getElementById('self-log');
+  if (logDiv && !logDiv._wired) {
+    logDiv._wired = true;
+    logDiv.addEventListener('click', function(e) {
+      const chip = e.target.closest('.tap-chip');
+      if (!chip) return;
+      const field = chip.dataset.sffield;
+      const val = chip.dataset.val;
+      if (!field || !val) return;
+      sfTapState[field] = val;
+      chip.closest('.tap-group').querySelectorAll('.tap-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      // Filter play chips when form or concept changes
+      if (field === 'form' || field === 'concept' || field === 'motion') {
+        renderSFPlayChips();
+      }
+    });
+    document.getElementById('sf-log-btn').addEventListener('click', logSelf);
+  }
+  renderSFPlayChips();
+}
+
+function renderSFPlayChips() {
+  const el = document.getElementById('sf-tg-play');
+  if (!el) return;
+  const filtered = PLAYS.filter(p => {
+    const formMatch = p.form === sfTapState.form;
+    const conceptMatch = !sfTapState.concept || p.concept === sfTapState.concept;
+    return formMatch && conceptMatch;
+  });
+  if (!filtered.length) {
+    el.innerHTML = '<div style="font-size:12px;color:#555;padding:4px;">No plays match this formation + concept.</div>';
+    sfTapState.play = '';
+    return;
+  }
+  el.innerHTML = filtered.map((p, i) => {
+    const short = p.name.replace(p.form + ' – ', '');
+    const active = i === 0 ? ' active' : '';
+    if (i === 0) sfTapState.play = p.name;
+    return `<div class="tap-chip${active}" data-sffield="play" data-val="${p.name}">${short}</div>`;
+  }).join('');
+}
+
+function updateSfWeeks() {
+  const wks = [...new Set(sfLog.map(p => p.gm).filter(Boolean))];
+  const s = document.getElementById('sf-wk');
+  if (!s) return;
+  const cur = s.value;
+  s.innerHTML = '<option value="all">All Games</option>' + wks.map(w => `<option value="${w}">${w}</option>`).join('');
+  if (wks.includes(cur)) s.value = cur;
+}
+
+function logSelf() {
+  if (!sfTapState.play) { alert('Please select a play.'); return; }
+  if (!sfTapState.result) { alert('Please tap a result.'); return; }
+  const gm = document.getElementById('sf-game').value.trim() || 'Game ' + (new Set(sfLog.map(p => p.gm)).size + 1);
+  const pl = PLAYS.find(x => x.name === sfTapState.play) || {};
+  const p = {
+    id: Date.now().toString(),
+    name: sfTapState.play,
+    gm,
+    qt: sfTapState.qtr,
+    dn: sfTapState.down,
+    ds: sfTapState.dist,
+    ha: sfTapState.hash,
+    fp: sfTapState.fp,
+    form: sfTapState.form,
+    motion: sfTapState.motion,
+    concept: pl.concept || sfTapState.concept,
+    type: pl.type || 'pass',
+    ya: document.getElementById('sf-ya').value || '0',
+    res: sfTapState.result
+  };
+  sfLog.push(p);
+  sv('sfLog', sfLog);
+  // Reset result only
+  sfTapState.result = '';
+  document.getElementById('sf-tg-result').querySelectorAll('.tap-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('sf-ya').value = '';
+  document.getElementById('sfcnt').textContent = sfLog.length;
+  updateSfWeeks();
+  renderSelfDash();
+  const btn = document.getElementById('sf-log-btn');
+  btn.textContent = '✓ Logged!'; btn.style.background = '#14532d';
+  setTimeout(() => { btn.textContent = 'Log Play'; btn.style.background = ''; }, 1000);
+}
+
+
+function getSFLog(){const w=document.getElementById('sf-wk')?.value||'all';return w==='all'?sfLog:sfLog.filter(p=>p.gm===w);}
+function renderSelfDash(){const el=document.getElementById('sfdash'),log=getSFLog();if(!log.length){el.innerHTML='<div class="empty">Log plays to see your tendencies.</div>';return;}el.innerHTML=buildDash(log,'self');}
+function renderSelfRaw(){const el=document.getElementById('sfraw');if(!sfLog.length){el.innerHTML='<div class="empty">No plays logged.</div>';return;}el.innerHTML=[...sfLog].reverse().map((p,i)=>{const n=sfLog.length-i,pl=PLAYS.find(x=>x.name===p.name)||{type:'pass'};const pill=`<span class="pill ${pl.type==='run'?'pr':pl.type==='screen'?'ps':'pp'}">${pl.type}</span>`;const short=p.name.replace((p.form||pl.form||'')+' – ','');return`<div class="log-item"><div class="log-num">${n}</div><div class="log-info"><div class="log-play">${pill}${short}</div><div class="log-meta">${p.gm||'?'} · Q${p.qt} · ${p.dn}${sfx(parseInt(p.dn))} &amp; ${p.ds} · ${p.ha} hash · ${p.fp||''}</div></div><span class="log-res ${rc(p.res)}">${p.res}${p.ya&&p.ya!=='0'?' '+p.ya+'yds':''}</span><button class="edit-btn" onclick="openEdit('self','${p.id}')">✎</button></div>`;}).join('');}
+function clearSelf(){sfLog=[];sv('sfLog',sfLog);document.getElementById('sfcnt').textContent=0;renderSelfRaw();renderSelfDash();}
+function selfTab(t,el){document.querySelectorAll('#mode-self .tab').forEach(x=>x.classList.remove('active'));if(el)el.classList.add('active');document.getElementById('self-dash').style.display=t==='dash'?'block':'none';document.getElementById('self-log').style.display=t==='log'?'block':'none';document.getElementById('self-raw').style.display=t==='raw'?'block':'none';if(t==='log')initSelfLog();if(t==='dash'){const s=document.getElementById('sf-wk');if(s)updateSfWeeks();renderSelfDash();}if(t==='raw')renderSelfRaw();}
+
+/* SHARED DASH */
+function buildDash(log,mode){
+  const tot=log.length;
+  const getType=p=>mode==='opp'?(p.pt.includes('Run')?'run':p.pt.includes('Pass')?'pass':'screen'):(PLAYS.find(x=>x.name===p.name)||{type:'pass'}).type;
+  const runs=log.filter(p=>getType(p)==='run').length,passes=log.filter(p=>getType(p)==='pass').length,screens=log.filter(p=>getType(p)==='screen').length;
+  const pct=n=>tot?Math.round(n/tot*100):0;
+  let h=`<div class="stat-grid"><div class="stat-card"><div class="stat-val">${tot}</div><div class="stat-label">Total Plays</div></div><div class="stat-card"><div class="stat-val">${pct(runs)}%</div><div class="stat-label">Run</div></div><div class="stat-card"><div class="stat-val">${pct(passes)}%</div><div class="stat-label">Pass</div></div></div>`;
+  const bars=(title,vals,cf)=>{if(!vals.length)return'';const c={};vals.forEach(v=>{c[v]=(c[v]||0)+1;});const s=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,8);return`<div class="tend-section"><div class="tend-title">${title}</div>`+s.map(([k,v])=>`<div class="bar-row"><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill ${cf(k)}" style="width:${Math.round(v/tot*100)}%"></div></div><div class="bar-pct">${Math.round(v/tot*100)}%</div></div>`).join('')+'</div>';};
+  if(mode==='opp'){
+    h+=bars('Formation Frequency',log.map(p=>p.fo),()=>'bf-def');
+    h+=bars('Play Type',log.map(p=>p.pt),t=>t.includes('Run')?'bf-run':t.includes('Pass')?'bf-pass':'bf-screen');
+    h+=bars('Motion Usage',log.filter(p=>p.mo&&p.mo!=='None').map(p=>p.mo),()=>'bf-def');
+    const d1=log.filter(p=>p.dn==='1'),d2=log.filter(p=>p.dn==='2'),d3=log.filter(p=>p.dn==='3');
+    if(d1.length||d2.length||d3.length){h+=`<div class="tend-section"><div class="tend-title">Run% by Down</div>`;[[1,d1],[2,d2],[3,d3]].forEach(([d,pl])=>{if(!pl.length)return;const r=pl.filter(p=>p.pt.includes('Run')).length,rp=Math.round(r/pl.length*100);h+=`<div class="bar-row"><div class="bar-label">${d}${sfx(d)} Down (${pl.length})</div><div class="bar-track"><div class="bar-fill bf-run" style="width:${rp}%"></div></div><div class="bar-pct">${rp}%</div></div>`;});h+='</div>';}
+    h+=bars('Hash Tendency',log.map(p=>p.ha==='L'?'Left hash':p.ha==='R'?'Right hash':'Middle'),()=>'bf-def');
+    h+=bars('Field Position',log.map(p=>p.fp),()=>'bf-def');
+  } else {
+    h+=bars('Most Called Concepts',log.map(p=>(PLAYS.find(x=>x.name===p.name)||{}).concept||'?'),c=>['Zone','Jet','Counter'].includes(c)?'bf-run':['Burn','Smoke','Fire'].includes(c)?'bf-screen':'bf-pass');
+    h+=bars('Most Called Formations',log.map(p=>(PLAYS.find(x=>x.name===p.name)||{}).form||'?'),()=>'bf-def');
+    h+=bars('Most Called Plays',log.map(p=>p.name.replace(/^(Ace RT|Ace LF|Tech RT|Tech LF) – /,'')),()=>'bf-pass');
+    const d1=log.filter(p=>p.dn==='1'),d2=log.filter(p=>p.dn==='2'),d3=log.filter(p=>p.dn==='3');
+    if(d1.length||d2.length||d3.length){h+=`<div class="tend-section"><div class="tend-title">Run% by Down</div>`;[[1,d1],[2,d2],[3,d3]].forEach(([d,pl])=>{if(!pl.length)return;const r=pl.filter(p=>{const x=PLAYS.find(y=>y.name===p.name);return x&&x.type==='run';}).length,rp=Math.round(r/pl.length*100);h+=`<div class="bar-row"><div class="bar-label">${d}${sfx(d)} Down (${pl.length})</div><div class="bar-track"><div class="bar-fill bf-run" style="width:${rp}%"></div></div><div class="bar-pct">${rp}%</div></div>`;});h+='</div>';}
+    const tds=log.filter(p=>p.res==='TD').length,tos=log.filter(p=>p.res==='Turnover').length,gs=log.filter(p=>p.res==='Gain').length;
+    if(tds||tos||gs)h+=`<div class="tend-section"><div class="tend-title">Results</div><div class="bar-row"><div class="bar-label">Gains (${gs})</div><div class="bar-track"><div class="bar-fill bf-run" style="width:${pct(gs)}%"></div></div><div class="bar-pct">${pct(gs)}%</div></div><div class="bar-row"><div class="bar-label">TDs (${tds})</div><div class="bar-track"><div class="bar-fill bf-pass" style="width:${pct(tds)}%"></div></div><div class="bar-pct">${pct(tds)}%</div></div><div class="bar-row"><div class="bar-label">Turnovers (${tos})</div><div class="bar-track"><div class="bar-fill" style="background:#ef4444;width:${pct(tos)}%"></div></div><div class="bar-pct">${pct(tos)}%</div></div></div>`;
+    h+=bars('Hash Tendency',log.map(p=>p.ha==='L'?'Left hash':p.ha==='R'?'Right hash':'Middle'),()=>'bf-def');
+    h+=bars('Field Position',log.map(p=>p.fp||'?'),()=>'bf-def');
+  }
+  return h;
+}
+
+/* MODE SWITCH */
+function setMode(m,el){document.querySelectorAll('.mode-btn').forEach(x=>x.classList.remove('active'));el.classList.add('active');['gd','opp','self'].forEach(x=>document.getElementById('mode-'+x).style.display=x===m?'block':'none');if(m==='opp'){renderOppChips();renderOppTapChips();}if(m==='self')initSelfLog();}
+
+// Document-level fallback so Scout Opp tap-chips always respond,
+// even if per-tab wiring didn't run. Idempotent with the inner handler.
+document.addEventListener('click', function(e){
+  const chip = e.target.closest('#opp-log .tap-chip');
+  if(!chip) return;
+  const f=chip.dataset.field, v=chip.dataset.val;
+  if(!f||!v) return;
+  try{ tapState[f]=v; }catch(_){}
+  const grp=chip.closest('.tap-group');
+  if(grp) grp.querySelectorAll('.tap-chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+});
+
+load();
+// Kick off cross-device sync once the app has loaded
+sbSetStatus(sbConfigured()?'sync':'off');
+if(sbConfigured()) setTimeout(sbPull, 300);
+</script>
+
+
+<style>
+.prep-section{margin-bottom:18px;}
+.prep-role{font-size:11px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:1px;padding:6px 10px;border-radius:6px;margin-bottom:10px;}
+.prep-role.off-coord{background:#1A3E2E;}
+.prep-role.off-qb{background:#2D6A4F;}
+.prep-role.off-ol{background:#374151;}
+.prep-role.off-rb{background:#4B5563;}
+.prep-role.off-wr{background:#52B788;color:#000;}
+.prep-role.def-coord{background:#1A3E2E;}
+.prep-role.def-dl{background:#2D6A4F;}
+.prep-role.def-lb{background:#374151;}
+.prep-role.def-db{background:#4B5563;}
+.prep-q{margin-bottom:10px;}
+.prep-q label{font-size:11px;font-weight:600;color:#aaa;display:block;margin-bottom:4px;line-height:1.4;}
+.prep-q textarea{width:100%;background:#1a1d27;border:1px solid #2a2d3a;border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;resize:none;min-height:48px;outline:none;font-family:inherit;}
+.prep-q textarea:focus{border-color:#52B788;}
+.prep-divider{font-size:13px;font-weight:800;color:#52B788;text-transform:uppercase;letter-spacing:1.5px;padding:14px 0 8px;border-top:1px solid #2a2d3a;margin-top:6px;}
+.prep-saved{font-size:11px;color:#52B788;font-weight:700;opacity:0;transition:opacity 0.3s;}
+</style>
+
+<script>
+// ── GAME PREP ─────────────────────────────────────────────────────────────────
+
+const PREP_QUESTIONS = [
+  { section: 'OFFENSIVE SCOUTING', role: null },
+  { role: 'Offensive Coordinator', cls: 'off-coord', qs: [
+    'How aggressive are safeties vs. our run game? (1–10 scale)',
+    'Do Apex or Hang Players re-route #2 receiver(s) in drop back or play action?',
+    'How does the defense adjust to motion?',
+    'Do they have a Bunch Check or Empty Check?',
+    'How does adjusting LB align to the field to support the perimeter — Apex, cheat, or Box?',
+    'How are teams generating explosive passes?',
+    'What does boundary adjuster do vs. #2 WR — walk out or cheat to the box?',
+    'Is the QB right-handed or left-handed?',
+    'How often does the offense use motion? (1–10 scale)',
+    "What is the team's 3rd down ratio? 4th down ratio?"
+  ]},
+  { role: 'OL Coach', cls: 'off-ol', qs: [
+    "Who's their best DL? Do we need a special plan for him?",
+    "Worst DL? What can we run at him?",
+    'How are DL coached to take on pullers — Wrong-Arm, Spill?',
+    'DL slant tendency — to or away from RB? To field?',
+    'Do their LBs play downhill enough that we need to focus on coming off combo blocks sooner?',
+    'Where do 3-tech and shade DL line up the majority of the time?',
+    'Can we reach their DEs?',
+    'How often do they line up strength of formation to the boundary? (1–10)',
+    'How often do they run the ball into the boundary? (1–10)',
+    'Which DL slant tendencies can we exploit most — to/away from RB? To field?',
+    'Rate how successful their OL is at combo blocks (DL to LBs)? (1–10)',
+    'What type of pass protection do they mostly use? How can we exploit it?',
+    'Is their OL more successful at pass blocking or run blocks?'
+  ]},
+  { role: 'RB Coach', cls: 'off-rb', qs: [
+    "Best LB? What does he do well?",
+    "Worst LB? What can we do to exploit him?",
+    'Does Walk-out LB Apex or cheat to the box?',
+    'LB walk out vs. 2x2 / Cheat to box?',
+    'How well do LBs fit the run?',
+    'Are LBs aggressive run game players?',
+    'Are safeties aggressive run game players?',
+    'Are they a team we can screen?',
+    'How are teams generating explosive runs?',
+    "List their top 3 RBs",
+    'Rate how often we need help from safeties or DBs to stop the run game (1–10)',
+    'Rate how often they use screen passes (1–10)',
+    'How is the offense generating explosive runs?'
+  ]},
+  { role: 'WR Coach', cls: 'off-wr', qs: [
+    "Best DB? What does he do well?",
+    "Worst DB? What can we do to exploit him?",
+    'DBs — eye on WRs or QBs in the pass game?',
+    'How do corner & safety play most dangerous man blocks?',
+    'How do Safety & Corners support run on perimeter?',
+    'Can our LBs play aggressive on early downs to help DBs in the run game? (1–10)',
+    'On a scale of 1–10, how careless are their skill players when carrying the football? (Can we exploit using punch or striping techniques?)',
+    'How is the offense generating explosive passes? (1–10)',
+    'How would you rate WRs subbing in & out in their tempo offense? (1–10)'
+  ]},
+
+  { section: 'DEFENSIVE SCOUTING', role: null },
+  { role: 'Defensive Coordinator', cls: 'def-coord', qs: [
+    'How would you rate this team using tempo on a scale of 1–10?',
+    'What are the top 5 offensive formations? What are their top 5 base runs?',
+    'Is this a heavy run team or heavy pass team?',
+    "Who are their top 3 playmakers on offense?"
+  ]},
+  { role: 'DL Coach', cls: 'def-dl', qs: [
+    "Who's their worst OL? Do we have a special plan for him?",
+    'How often do they line up strength of formation to the boundary? (1–10)',
+    'How often do they run the ball into the boundary? (1–10)',
+    'Which DL slant tendencies can we use to exploit them — to/away from RB? To field?',
+    'Rate how successful their OL is at combo blocks DL to LBs (1–10)',
+    'Can our DEs reach the QB on passing downs?',
+    'Which D-linemen do they read in the option run game if they run option?',
+    'What type of pass protection do they mostly use? How can we exploit it?',
+    'Is their offensive line more successful at pass blocking or run blocks?'
+  ]},
+  { role: 'LB Coach', cls: 'def-lb', qs: [
+    'Will stunts and twists without LB blitzes be effective vs. this team on passing downs?',
+    'Does the QB throw to their RBs in the passing game? Can any of our LBs cover them?',
+    'What type of blitzes do we need to use to be successful on 3rd downs?',
+    'Rate how well their RBs pass pro block vs. our LBs (1–10)',
+    'Rate how well their RBs carry out fakes in play-action or RPO offense (1–10)',
+    "List their top 3 RBs",
+    'Rate how often we need help from safeties or DBs to stop the run game (1–10)',
+    'Rate how often they use screen passes (1–10)',
+    'How is the offense generating explosive runs?'
+  ]},
+  { role: 'DB Coach', cls: 'def-db', qs: [
+    "Who's their 3 top best WRs? What does each do well?",
+    "What are QB1 & QB2's favorite route concepts or routes they love to throw?",
+    'What defensive coverage are their QBs MOST INEFFECTIVE in?',
+    'Can our DBs use a Bluff scheme to bait their QB1 into committing a turnover?',
+    'Is QB1 or QB2 a pocket passing QB or dual-threat QB?',
+    'How would you rate their WRs stalk blocking on the perimeter? (1–10)',
+    'How would you rate QB1 & QB2 arm strength (1–10) on: Screen throws after 2nd Qtr / Intermediate throws / Out route throws / Deep throws',
+    'Can our LBs play aggressive on early downs to help the DBs in the run game?',
+    'On a scale of 1–10, how careless are their skill players carrying the football? Can we exploit using punch or striping techniques?',
+    'How is the offense generating explosive passes? (1–10)',
+    'How would you rate WRs subbing in & out in their tempo offense? (1–10)'
+  ]}
+];
+
+function renderPrep() {
+  const body = document.getElementById('prep-body');
+  const lbl = document.getElementById('prep-lbl');
+  if (!curOpp) { body.innerHTML = '<div class="empty">Select an opponent above to fill out game prep notes.</div>'; return; }
+  lbl.textContent = curOpp.name + (curOpp.week ? ' · ' + curOpp.week : '') + ' — Game Prep';
+
+  let saved = {};
+  try {
+    const raw = localStorage.getItem('prep_' + curOpp.id);
+    if (raw) saved = JSON.parse(raw);
+  } catch(e) {}
+
+  let html = '';
+  PREP_QUESTIONS.forEach(item => {
+    if (item.section) {
+      html += `<div class="prep-divider">${item.section}</div>`;
+      return;
+    }
+    html += `<div class="prep-section">`;
+    html += `<div class="prep-role ${item.cls}">${item.role}</div>`;
+    item.qs.forEach((q, qi) => {
+      const key = item.cls + '_' + qi;
+      const val = (saved[key] || '').replace(/</g,'&lt;');
+      html += `<div class="prep-q">
+        <label>${q}</label>
+        <textarea rows="2" data-key="${key}" placeholder="Notes...">${val}</textarea>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  body.innerHTML = html;
+}
+
+function savePrep() {
+  if (!curOpp) return;
+  const notes = {};
+  document.querySelectorAll('#prep-body textarea').forEach(ta => {
+    notes[ta.dataset.key] = ta.value;
+  });
+  sv('prep_' + curOpp.id, notes);
+  const btn = document.querySelector('[onclick="savePrep()"]');
+  const orig = btn.textContent;
+  btn.textContent = '✓ Saved!';
+  btn.style.background = '#14532d';
+  setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 1500);
+}
+
+// Auto-save on input
+document.getElementById('prep-body').addEventListener('input', function(e) {
+  if (e.target.tagName === 'TEXTAREA' && curOpp) {
+    // collect all current textarea values and save
+    const notes = {};
+    document.querySelectorAll('#prep-body textarea').forEach(ta => {
+      notes[ta.dataset.key] = ta.value;
+    });
+    sv('prep_' + curOpp.id, notes);
+  }
+});
+
+// Update selOpp to also refresh prep label if prep is active
+const _origSelOpp = window.selOpp;
+window.selOpp = function(id) {
+  _origSelOpp(id);
+  const prepTab = document.getElementById('opp-prep');
+  if (prepTab && prepTab.style.display !== 'none') renderPrep();
+  document.getElementById('prep-lbl').textContent = curOpp ? curOpp.name + (curOpp.week ? ' · ' + curOpp.week : '') + ' — Game Prep' : 'Select an opponent above';
+};
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
